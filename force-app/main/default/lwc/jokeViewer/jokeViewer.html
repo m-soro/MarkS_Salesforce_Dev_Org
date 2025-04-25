@@ -1,0 +1,24 @@
+<template>
+    <lightning-card title="Joke Break ☕">
+        <div class="slds-p-around_medium">
+            <lightning-button label="Tell me a joke" onclick={handleGetJoke} variant="brand"></lightning-button>
+
+            <template if:true={loading}>
+                <p class="slds-m-top_medium">Loading joke...</p>
+            </template>
+
+            <template if:true={error}>
+                <p class="slds-text-color_error slds-m-top_medium">No jokes today 😢</p>
+            </template>
+
+            <template if:true={joke}>
+                <p class="slds-m-top_medium">{joke}</p>
+            </template>
+
+            <template if:true={isTwoPart}>
+                <p class="slds-m-top_medium"><strong>{setup}</strong></p>
+                <p>{delivery}</p>
+            </template>
+        </div>
+    </lightning-card>
+</template>
