@@ -1,0 +1,164 @@
+<aura:component implements="flexipage:availableForRecordHome,force:hasRecordId" 
+                controller="AccountContactController">
+    
+    <!-- Attributes -->
+    <aura:attribute name="recordId" type="Id" />
+    <aura:attribute name="contacts" type="Contact[]" />
+    <aura:attribute name="newContact" type="Contact" 
+                    default="{ 'sobjectType': 'Contact', 
+                             'FirstName': '', 
+                             'LastName': '', 
+                             'Email': '' }" />
+    <aura:attribute name="isNewContactModalOpen" type="Boolean" default="false" />
+    <aura:attribute name="selectedContact" type="Contact" />
+    <aura:attribute name="emailError" type="String" default="" />
+    <aura:attribute name="contactToDeleteId" type="String" default="" />
+    <aura:attribute name="showDeleteConfirmation" type="Boolean" default="false" />
+    <aura:attribute name="contactToEditId" type="String" default="" />
+    <aura:attribute name="showEditConfirmation" type="Boolean" default="false" />
+    
+    <!-- Handlers -->
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    
+    <!-- Component Body -->
+    <div class="slds-card">
+        <div class="slds-card__header slds-grid">
+            <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                <div class="slds-media__body">
+                    <h2 class="slds-card__header-title">
+                        <span>Contacts</span>
+                    </h2>
+                </div>
+                <div class="slds-no-flex">
+                    <lightning:button label="New Contact" 
+                                     onclick="{!c.openNewContactModal}" 
+                                     variant="brand" />
+                </div>
+            </header>
+        </div>
+        
+        <div class="slds-card__body">
+            <!-- Contacts Table -->
+            <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                <thead>
+                    <tr class="slds-line-height_reset">
+                        <th class="slds-text-title_caps" scope="col">Name</th>
+                        <th class="slds-text-title_caps" scope="col">Email</th>
+                        <th class="slds-text-title_caps" scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <aura:if isTrue="{!v.contacts.length > 0}">
+                        <aura:iteration items="{!v.contacts}" var="contact">
+                            <tr>
+                                <td>{!contact.Name}</td>
+                                <td>{!contact.Email}</td>
+                                <td>
+                                    <lightning:buttonIcon iconName="utility:edit" 
+                                                         alternativeText="Edit" 
+                                                         onclick="{!c.handleEditClick}" 
+                                                         value="{!contact.Id}" />
+                                    <lightning:buttonIcon iconName="utility:delete" 
+                                                         alternativeText="Delete" 
+                                                         onclick="{!c.handleDeleteClick}" 
+                                                         value="{!contact.Id}" />
+                                </td>
+                            </tr>
+                        </aura:iteration>
+                        <aura:set attribute="else">
+                            <tr>
+                                <td colspan="3" class="slds-text-align_center">No contacts found</td>
+                            </tr>
+                        </aura:set>
+                    </aura:if>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- New Contact Modal -->
+    <aura:if isTrue="{!v.isNewContactModalOpen}">
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_small" aria-modal="true">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <h2 class="slds-text-heading_medium slds-hyphenate">New Contact</h2>
+                </header>
+                <div class="slds-modal__content slds-var-p-around_medium">
+                    <lightning:input label="First Name" 
+                                    value="{!v.newContact.FirstName}" 
+                                    required="true" />
+                    <lightning:input label="Last Name" 
+                                    value="{!v.newContact.LastName}" 
+                                    required="true" />
+                    <lightning:input label="Email" 
+                                    value="{!v.newContact.Email}" 
+                                    type="email" 
+                                    required="true" 
+                                    messageWhenPatternMismatch="Please enter a valid email address" />
+                    <aura:if isTrue="{!not(empty(v.emailError))}">
+                        <div class="slds-text-color_error">{!v.emailError}</div>
+                    </aura:if>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning:button label="Cancel" 
+                                     onclick="{!c.closeNewContactModal}" />
+                    <lightning:button label="Save" 
+                                     variant="brand" 
+                                     onclick="{!c.saveNewContact}" />
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </aura:if>
+    
+    <!-- Edit Confirmation Modal -->
+    <aura:if isTrue="{!v.showEditConfirmation}">
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <h2 class="slds-modal__title">Edit Contact</h2>
+                </header>
+                <div class="slds-modal__content slds-var-p-around_medium">
+                    <lightning:input label="First Name"
+                                    value="{!v.selectedContact.FirstName}"
+                                    required="true" />
+                    <lightning:input label="Last Name"
+                                    value="{!v.selectedContact.LastName}"
+                                    required="true" />
+                    <lightning:input label="Email"
+                                    value="{!v.selectedContact.Email}"
+                                    type="email"
+                                    required="true"
+                                    messageWhenPatternMismatch="Please enter a valid email address" />
+                    <aura:if isTrue="{!not(empty(v.emailError))}">
+                        <div class="slds-text-color_error">{!v.emailError}</div>
+                    </aura:if>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning:button variant="neutral" label="Cancel" onclick="{!c.cancelEdit}" />
+                    <lightning:button variant="brand" label="Save" onclick="{!c.confirmEdit}" />
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </aura:if>
+    
+    <!-- Delete Confirmation Modal -->
+    <aura:if isTrue="{!v.showDeleteConfirmation}">
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <h2 class="slds-modal__title">Confirm Deletion</h2>
+                </header>
+                <div class="slds-modal__content slds-var-p-around_medium">
+                    Are you sure you want to delete this contact?
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning:button variant="neutral" label="Cancel" onclick="{!c.cancelDelete}" />
+                    <lightning:button variant="brand" label="Delete" onclick="{!c.confirmDelete}" />
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </aura:if>
+</aura:component>
