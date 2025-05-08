@@ -1,0 +1,6 @@
+<aura:documentation>
+	<aura:description>Documentation</aura:description>
+	<aura:example name="ExampleName" ref="exampleComponentName" label="Label">
+		An Aura component that displays a list of contacts associated with an account. It includes functionality to add, edit, and delete contacts.
+	</aura:example>
+</aura:documentation>
